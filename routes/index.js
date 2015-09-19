@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var passport = require('passport');
+var bcrypt = require('bcrypt');
 var User = require('../models/user');
 
 /* GET home page. */
@@ -9,11 +10,11 @@ router.get('/', function (req, res, next) {
 });
 
 router.get('/startup', function (req, res, next) {
-    User.count(function(err, count){
-        if(count == 0)
+    User.count(function (err, count) {
+        if (count == 0)
             res.render('startup');
         else
-            res.redirect('/login');
+            res.redirect('/admin/login');
     })
 });
 
@@ -23,26 +24,19 @@ router.post('/startup', function (req, res, next) {
             res.redirect("/login")
 
         // This means we can actually set up this user
-        var admin = new User({username: req.param.username,
-                              password: req.param.password})
+        console.log(req.body.password);
+        bcrypt.hash(req.body.password, 8, function (err, hash) {
+            var admin = new User({
+                username: req.body.username,
+                password: hash,
+                email: req.body.email,
+                name: req.body.fullname
+            });
+            admin.save();
+
+            res.redirect('/admin/login');
+        });
     })
 });
-
-router.get('/login', function (req, res, next) {
-    User.count(function (err, count) {
-        if (count == 0) {
-            res.redirect('/startup');
-        }
-        else {
-            res.render('login');
-        }
-    })
-});
-
-router.post('/login', passport.authenticate('local', {
-    successRedirect: '/home',
-    failureRedirect: '/login',
-    failureFlash: true
-}));
 
 module.exports = router;

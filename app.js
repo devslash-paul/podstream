@@ -12,6 +12,7 @@ var User = require('./models/user');
 var routes = require('./routes/index');
 var users = require('./routes/users');
 var admin = require('./routes/admin');
+var api = require('./routes/api');
 
 var pass = require('./authentication/passportConfig.js');
 
@@ -38,6 +39,7 @@ app.use(require('node-sass-middleware')({
   sourceMap: true
 }));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/bower', express.static(path.join(__dirname , 'bower_components')));
 app.use(session({secret: 'test'}));
 app.use(passport.initialize());
 app.use(passport.session());
@@ -54,15 +56,17 @@ passport.deserializeUser(function (id, done) {
 });
 
 var isAuthenticated = function(req, res, next) {
-  if(req.isAuthenticated()) {
+  console.log(req.url)
+  if(req.isAuthenticated() || req.url==="/login") {
     return next();
   }
-  res.redirect("/login");
+  res.redirect("/admin/login");
 };
 
 app.use('/', routes);
 app.use('/users', users);
-app.use('/admin', isAuthenticated, admin);
+app.use('/admin', isAuthenticated,admin);
+app.use('/api', api);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

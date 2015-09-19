@@ -1,13 +1,25 @@
 var passport = require('passport'),
-    localStrategy = require('passport-local').Strategy;
+    localStrategy = require('passport-local').Strategy,
+    bcrypt = require('bcrypt'),
+    User = require('../models/user');
 
 passport.use(new localStrategy(
     function (username, password, done) {
-        if (username == "paul") {
-            return done(null, {_id:1,username: "paul"});
-        }
-        else {
-            return done(null, false);
-        }
+
+        User.findOne({username: username}, function (err, doc) {
+            if (err) return done(err);
+
+            if (doc) {
+                bcrypt.compare(password, doc.password, function (err, res) {
+                    console.log(err);
+                    if (err) return done(err);
+                    if (res) return done(null, doc);
+                    return done(null, false);
+                })
+            }
+            else {
+                return done(null, false);
+            }
+        })
     }
 ));
