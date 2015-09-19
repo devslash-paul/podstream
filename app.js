@@ -4,11 +4,22 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var passport = require('passport');
+var session = require('express-session');
+var mongoose = require('mongoose');
+var User = require('./models/user');
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
+var admin = require('./routes/admin');
+
+var pass = require('./authentication/passportConfig.js');
 
 var app = express();
+
+mongoose.connect('mongodb://localhost/podstream', function(err) {
+  console.log(err);
+});
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -27,9 +38,31 @@ app.use(require('node-sass-middleware')({
   sourceMap: true
 }));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(session({secret: 'test'}));
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.serializeUser(function (user, done) {
+  done(null, user._id);
+});
+
+
+passport.deserializeUser(function (id, done) {
+  User.findById(id, function(err, user) {
+    done(err, user);
+  })
+});
+
+var isAuthenticated = function(req, res, next) {
+  if(req.isAuthenticated()) {
+    return next();
+  }
+  res.redirect("/login");
+};
 
 app.use('/', routes);
 app.use('/users', users);
+app.use('/admin', isAuthenticated, admin);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

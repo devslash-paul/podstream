@@ -1,0 +1,27 @@
+extends layout
+
+block content
+  div.container
+    div.row
+      .col-md-6.col-md-offset-3
+          h3 Get started with PodStream
+
+          form(action='/startup' method='post')
+            .form-group
+              label(for=podname) Podcast Name
+              input.form-control(type=text name=podname placeholder="Podcast Name")
+            .form-group
+              label(for=fullname) Full name
+              input.form-control(type=text name=fullname placeholder="Full name")
+            .form-group
+              label(for=username) Username
+              input.form-control(type=text name=username placeholder="Username")
+            .form-group
+              label(for=username) Email
+              input.form-control(type=email name=username placeholder="Email")
+            .form-group
+              label(for=password) Password
+              input.form-control(type="password" name=password placeholder="Password")
+            button.btn.btn-default.pull-right(type=submit) Submit
+
+
